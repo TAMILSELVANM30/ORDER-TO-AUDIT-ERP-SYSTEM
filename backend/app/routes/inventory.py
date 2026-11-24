@@ -10,7 +10,7 @@ def get_inventory_summary():
     db = SessionLocal()
     try:
         summary = ReportService.get_stock_summary(db)
-        return jsonify({'summary': summary}), 200
+        return jsonify({'summary': summary, 'data': summary}), 200
     finally:
         db.close()
 
@@ -21,6 +21,6 @@ def get_inventory_ledger():
         item_type = request.args.get('item_type')
         item_id = request.args.get('item_id')
         ledger = ReportService.get_stock_ledger(db, item_type=item_type, item_id=item_id)
-        return jsonify({'ledger': ledger}), 200
+        return jsonify({'ledger': ledger, 'data': {'entries': ledger, 'total': len(ledger)}}), 200
     finally:
         db.close()

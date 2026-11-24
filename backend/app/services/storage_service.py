@@ -64,7 +64,11 @@ def get_supabase_client() -> Client:
     global _supabase_client
     if _supabase_client is None:
         url = os.environ.get("SUPABASE_URL", "")
-        key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+        key = (
+            os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
+            or os.environ.get("SUPABASE_KEY", "")
+            or os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")
+        )
         if not url or not key:
             raise EnvironmentError(
                 "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in environment. "
@@ -76,7 +80,14 @@ def get_supabase_client() -> Client:
 
 def is_supabase_configured() -> bool:
     """Return True when Supabase env vars are present (does not validate credentials)."""
-    return bool(os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_SERVICE_ROLE_KEY"))
+    return bool(
+        os.environ.get("SUPABASE_URL")
+        and (
+            os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
+            or os.environ.get("SUPABASE_KEY")
+            or os.environ.get("SUPABASE_PUBLISHABLE_KEY")
+        )
+    )
 
 
 # ---------------------------------------------------------------------------

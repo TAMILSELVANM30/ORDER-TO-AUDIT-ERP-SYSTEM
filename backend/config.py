@@ -29,3 +29,11 @@ class Config:
     # Reports output directory
     REPORTS_DIR = os.path.join(basedir, 'generated_reports')
     os.makedirs(REPORTS_DIR, exist_ok=True)
+
+    # Supabase Storage
+    SUPABASE_URL = os.environ.get('SUPABASE_URL', '')
+    SUPABASE_SERVICE_ROLE_KEY = (
+        os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
+        or os.environ.get('SUPABASE_KEY', '')
+        or os.environ.get('SUPABASE_PUBLISHABLE_KEY', '')
+    )

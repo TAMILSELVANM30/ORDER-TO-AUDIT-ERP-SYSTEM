@@ -3,11 +3,14 @@ import api from '../../services/api';
 import { PageHeader } from '../../components/common/PageHeader';
 import { DataTable } from '../../components/common/DataTable';
 import { Dispatch } from '../../types';
-import { Truck } from 'lucide-react';
+import { Truck, Paperclip } from 'lucide-react';
+import DocumentAttachmentModal from '../../components/common/DocumentAttachmentModal';
 
 export const DispatchesPage: React.FC = () => {
   const [dispatches, setDispatches] = useState<Dispatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDispatch, setSelectedDispatch] = useState<Dispatch | null>(null);
+  const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
 
   useEffect(() => {
     const fetchDispatches = async () => {
@@ -57,6 +60,22 @@ export const DispatchesPage: React.FC = () => {
       header: 'Dispatched By',
       accessor: (row: Dispatch) => <span className="text-xs text-secondaryText">{row.created_by || 'Admin'}</span>,
     },
+    {
+      header: 'POD / Docs',
+      accessor: (row: Dispatch) => (
+        <button
+          onClick={() => {
+            setSelectedDispatch(row);
+            setIsAttachmentOpen(true);
+          }}
+          className="inline-flex items-center px-2 py-1 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-medium border border-indigo-200 transition-colors"
+          title="Upload or View Proof of Delivery / Lorry Receipt (LR)"
+        >
+          <Paperclip className="w-3.5 h-3.5 mr-1" />
+          POD Proof
+        </button>
+      ),
+    },
   ];
 
   return (
@@ -74,6 +93,22 @@ export const DispatchesPage: React.FC = () => {
         searchPlaceholder="Search dispatch # or customer..."
         isLoading={loading}
       />
+
+      {/* Supabase Storage Dispatch POD Modal */}
+      {selectedDispatch && (
+        <DocumentAttachmentModal
+          isOpen={isAttachmentOpen}
+          onClose={() => {
+            setIsAttachmentOpen(false);
+            setSelectedDispatch(null);
+          }}
+          referenceId={selectedDispatch.id}
+          referenceTitle={`Dispatch POD ${selectedDispatch.dispatch_number}`}
+          documentType="dispatch_proof"
+          canUpload={true}
+          canDelete={true}
+        />
+      )}
     </div>
   );
 };

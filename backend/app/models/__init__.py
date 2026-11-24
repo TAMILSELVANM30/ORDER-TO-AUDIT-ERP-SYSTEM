@@ -14,6 +14,7 @@ from app.models.dispatch import Dispatch, DispatchItem
 from app.models.payment import Payment, PaymentAllocation, PaymentMethod
 from app.models.stock_ledger import StockLedger, MovementType, ItemType
 from app.models.audit_log import AuditLog
+from app.models.file_attachment import FileAttachment
 
 __all__ = [
     'Base',
@@ -54,4 +55,5 @@ __all__ = [
     'MovementType',
     'ItemType',
     'AuditLog',
+    'FileAttachment',
 ]

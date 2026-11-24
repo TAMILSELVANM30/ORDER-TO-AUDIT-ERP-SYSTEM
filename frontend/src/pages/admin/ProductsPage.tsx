@@ -3,13 +3,16 @@ import api from '../../services/api';
 import { PageHeader } from '../../components/common/PageHeader';
 import { DataTable } from '../../components/common/DataTable';
 import { Product } from '../../types';
-import { Package, Plus } from 'lucide-react';
+import { Package, Plus, ImageIcon } from 'lucide-react';
 import { Modal } from '../../components/common/Modal';
+import DocumentAttachmentModal from '../../components/common/DocumentAttachmentModal';
 
 export const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
   const [name, setName] = useState('');
   const [sku, setSku] = useState('');
   const [packSize, setPackSize] = useState('200');
@@ -95,6 +98,22 @@ export const ProductsPage: React.FC = () => {
         <span className={`font-semibold ${row.current_stock > 20 ? 'text-emerald-700' : 'text-amber-700'}`}>
           {row.current_stock} packets
         </span>
+      ),
+    },
+    {
+      header: 'Product Image',
+      accessor: (row: Product) => (
+        <button
+          onClick={() => {
+            setSelectedProduct(row);
+            setIsImageModalOpen(true);
+          }}
+          className="inline-flex items-center px-2 py-1 rounded bg-teal-50 hover:bg-teal-100 text-teal-700 text-[11px] font-medium border border-teal-200 transition-colors"
+          title="Upload or View Public Product Picture"
+        >
+          <ImageIcon className="w-3.5 h-3.5 mr-1" />
+          Image
+        </button>
       ),
     },
   ];
@@ -222,6 +241,22 @@ export const ProductsPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Supabase Storage Product Image Modal */}
+      {selectedProduct && (
+        <DocumentAttachmentModal
+          isOpen={isImageModalOpen}
+          onClose={() => {
+            setIsImageModalOpen(false);
+            setSelectedProduct(null);
+          }}
+          referenceId={selectedProduct.id}
+          referenceTitle={`Product Image — ${selectedProduct.name} (${selectedProduct.sku})`}
+          documentType="product_image"
+          canUpload={true}
+          canDelete={true}
+        />
+      )}
     </div>
   );
 };

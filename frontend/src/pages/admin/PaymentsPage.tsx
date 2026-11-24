@@ -4,7 +4,8 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { DataTable } from '../../components/common/DataTable';
 import { Modal } from '../../components/common/Modal';
 import { Payment, Customer } from '../../types';
-import { CreditCard, Plus, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CreditCard, Plus, CheckCircle2, AlertCircle, Paperclip } from 'lucide-react';
+import DocumentAttachmentModal from '../../components/common/DocumentAttachmentModal';
 
 export const PaymentsPage: React.FC = () => {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -12,6 +13,8 @@ export const PaymentsPage: React.FC = () => {
   const [outstandingSummary, setOutstandingSummary] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -106,6 +109,22 @@ export const PaymentsPage: React.FC = () => {
         <span className="text-xs">
           {row.allocations?.map((a) => `${a.invoice_number} (₹${a.allocated_amount})`).join(', ') || 'Auto-allocated'}
         </span>
+      ),
+    },
+    {
+      header: 'Receipt Proof',
+      accessor: (row: Payment) => (
+        <button
+          onClick={() => {
+            setSelectedPayment(row);
+            setIsAttachmentOpen(true);
+          }}
+          className="inline-flex items-center px-2 py-1 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-medium border border-indigo-200 transition-colors"
+          title="Upload or View Bank Slip / Cheque Deposit Proof"
+        >
+          <Paperclip className="w-3.5 h-3.5 mr-1" />
+          Receipt
+        </button>
       ),
     },
   ];
@@ -258,6 +277,22 @@ export const PaymentsPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Supabase Storage Payment Receipt Modal */}
+      {selectedPayment && (
+        <DocumentAttachmentModal
+          isOpen={isAttachmentOpen}
+          onClose={() => {
+            setIsAttachmentOpen(false);
+            setSelectedPayment(null);
+          }}
+          referenceId={selectedPayment.id}
+          referenceTitle={`Payment Receipt ${selectedPayment.payment_number || selectedPayment.reference_number || ''}`}
+          documentType="payment_receipt"
+          canUpload={true}
+          canDelete={true}
+        />
+      )}
     </div>
   );
 };

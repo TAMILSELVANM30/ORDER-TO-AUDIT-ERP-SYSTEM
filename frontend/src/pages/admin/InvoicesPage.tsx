@@ -5,13 +5,16 @@ import { DataTable } from '../../components/common/DataTable';
 import { StatusBadge } from '../../components/common/StatusBadge';
 import { Modal } from '../../components/common/Modal';
 import { Invoice } from '../../types';
-import { Download, Truck, Eye, FileText, CheckCircle2 } from 'lucide-react';
+import { Download, Truck, Eye, FileText, CheckCircle2, Paperclip } from 'lucide-react';
+import DocumentAttachmentModal from '../../components/common/DocumentAttachmentModal';
 
 export const InvoicesPage: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
+  const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+  const [attachmentInvoice, setAttachmentInvoice] = useState<Invoice | null>(null);
   const [vehicleNo, setVehicleNo] = useState('');
   const [deliveryNotes, setDeliveryNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -137,6 +140,17 @@ export const InvoicesPage: React.FC = () => {
           </button>
           <button
             onClick={() => {
+              setAttachmentInvoice(row);
+              setIsAttachmentModalOpen(true);
+            }}
+            className="inline-flex items-center px-2 py-1 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-medium border border-indigo-200 transition-colors"
+            title="Upload/View Signed Invoices & POD"
+          >
+            <Paperclip className="w-3.5 h-3.5 mr-1" />
+            Docs
+          </button>
+          <button
+            onClick={() => {
               setSelectedInvoice(row);
               setIsDispatchModalOpen(true);
             }}
@@ -236,6 +250,22 @@ export const InvoicesPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Supabase Storage Attachment Modal */}
+      {attachmentInvoice && (
+        <DocumentAttachmentModal
+          isOpen={isAttachmentModalOpen}
+          onClose={() => {
+            setIsAttachmentModalOpen(false);
+            setAttachmentInvoice(null);
+          }}
+          referenceId={attachmentInvoice.id}
+          referenceTitle={`Invoice ${attachmentInvoice.invoice_number}`}
+          documentType="invoice"
+          canUpload={true}
+          canDelete={true}
+        />
+      )}
     </div>
   );
 };

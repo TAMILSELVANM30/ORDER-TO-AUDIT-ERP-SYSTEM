@@ -4,7 +4,8 @@ import { PageHeader } from '../../components/common/PageHeader';
 import { DataTable } from '../../components/common/DataTable';
 import { Modal } from '../../components/common/Modal';
 import { Supplier, Material } from '../../types';
-import { Plus, Receipt, CheckCircle2 } from 'lucide-react';
+import { Plus, Receipt, CheckCircle2, Paperclip } from 'lucide-react';
+import DocumentAttachmentModal from '../../components/common/DocumentAttachmentModal';
 
 export const PurchasesPage: React.FC = () => {
   const [purchases, setPurchases] = useState<any[]>([]);
@@ -12,6 +13,8 @@ export const PurchasesPage: React.FC = () => {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPurchase, setSelectedPurchase] = useState<any | null>(null);
+  const [isAttachmentOpen, setIsAttachmentOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -124,6 +127,22 @@ export const PurchasesPage: React.FC = () => {
     {
       header: 'Grand Total',
       accessor: (row: any) => <span className="font-bold text-mainText">₹{row.grand_total.toFixed(2)}</span>,
+    },
+    {
+      header: 'Bill / Docs',
+      accessor: (row: any) => (
+        <button
+          onClick={() => {
+            setSelectedPurchase(row);
+            setIsAttachmentOpen(true);
+          }}
+          className="inline-flex items-center px-2 py-1 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-medium border border-indigo-200 transition-colors"
+          title="Attach or View Vendor Tax Invoices"
+        >
+          <Paperclip className="w-3.5 h-3.5 mr-1" />
+          Bill Docs
+        </button>
+      ),
     },
   ];
 
@@ -289,6 +308,22 @@ export const PurchasesPage: React.FC = () => {
           </div>
         </form>
       </Modal>
+
+      {/* Supabase Storage Vendor Bill Modal */}
+      {selectedPurchase && (
+        <DocumentAttachmentModal
+          isOpen={isAttachmentOpen}
+          onClose={() => {
+            setIsAttachmentOpen(false);
+            setSelectedPurchase(null);
+          }}
+          referenceId={selectedPurchase.id}
+          referenceTitle={`Purchase Bill ${selectedPurchase.purchase_number || selectedPurchase.supplier_invoice_no || ''}`}
+          documentType="purchase_bill"
+          canUpload={true}
+          canDelete={true}
+        />
+      )}
     </div>
   );
 };

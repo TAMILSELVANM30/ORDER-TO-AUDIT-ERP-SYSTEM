@@ -53,6 +53,7 @@ class Product(Base, TimestampMixin):
     gst_rate = Column(Numeric(5, 2), nullable=False, default=Decimal('5.00')) # 5% default
     min_stock_level = Column(Numeric(12, 2), default=Decimal('20.00'))
     current_stock = Column(Numeric(12, 2), default=Decimal('0.00'))
+    image_url = Column(Text, nullable=True)
     is_active = Column(Boolean, default=True, nullable=False)
     
     category = relationship("ProductCategory", back_populates="products")
@@ -74,6 +75,7 @@ class Product(Base, TimestampMixin):
             'gst_rate': float(self.gst_rate),
             'min_stock_level': float(self.min_stock_level),
             'current_stock': float(self.current_stock),
+            'image_url': self.image_url,
             'is_active': self.is_active,
             'created_at': self.created_at.isoformat() if self.created_at else None,
         }

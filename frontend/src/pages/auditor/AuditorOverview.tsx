@@ -3,10 +3,11 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import {
   Users, FileText, ShoppingCart, Package, TrendingUp,
-  Download, BarChart2, ArrowRight, AlertCircle
+  Download, BarChart2, ArrowRight, AlertCircle, Paperclip
 } from 'lucide-react'
 import api from '../../services/api'
 import PageHeader from '../../components/common/PageHeader'
+import DocumentAttachmentModal from '../../components/common/DocumentAttachmentModal'
 
 interface QuickLink {
   label: string
@@ -29,6 +30,7 @@ const quickLinks: QuickLink[] = [
 ]
 
 export default function AuditorOverview() {
+  const [isAuditDocsOpen, setIsAuditDocsOpen] = React.useState(false);
   const { data: dashboard } = useQuery({
     queryKey: ['dashboard', 'auditor'],
     queryFn: () => api.get('/dashboard/auditor').then(r => r.data),
@@ -83,6 +85,25 @@ export default function AuditorOverview() {
         </div>
       </div>
 
+      {/* Supabase Storage Audit Dossier Link */}
+      <div className="card p-4 border-indigo-200 bg-indigo-50/60 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-700">
+            <Paperclip className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-indigo-950">Statutory Audit Supporting Dossier</h3>
+            <p className="text-xs text-indigo-800">Review statutory certificates, GST filings, signed bank certificates, and audit schedules stored in Supabase private storage.</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setIsAuditDocsOpen(true)}
+          className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold shadow-xs transition-colors shrink-0"
+        >
+          Open Audit Dossier
+        </button>
+      </div>
+
       <div className="card p-4 border-amber-200 bg-amber-50">
         <div className="flex gap-3">
           <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
@@ -95,6 +116,16 @@ export default function AuditorOverview() {
           </div>
         </div>
       </div>
+
+      <DocumentAttachmentModal
+        isOpen={isAuditDocsOpen}
+        onClose={() => setIsAuditDocsOpen(false)}
+        referenceId="statutory-audit-fy2026-27"
+        referenceTitle="Statutory Audit Dossier FY 2026-27"
+        documentType="audit_attachment"
+        canUpload={false}
+        canDelete={false}
+      />
     </div>
   )
 }

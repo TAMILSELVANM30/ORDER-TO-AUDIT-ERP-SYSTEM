@@ -6,7 +6,8 @@ import { StatusBadge } from '../../components/common/StatusBadge';
 import { VarianceIndicator } from '../../components/common/VarianceIndicator';
 import { Modal } from '../../components/common/Modal';
 import { ProductionRun, Product, BOM, Material } from '../../types';
-import { Plus, Factory, CheckCircle2, AlertTriangle, Eye, ArrowRight, Layers } from 'lucide-react';
+import { Plus, Factory, CheckCircle2, AlertTriangle, Eye, ArrowRight, Layers, Paperclip } from 'lucide-react';
+import DocumentAttachmentModal from '../../components/common/DocumentAttachmentModal';
 
 export const ProductionRunsPage: React.FC = () => {
   const [runs, setRuns] = useState<ProductionRun[]>([]);
@@ -17,6 +18,8 @@ export const ProductionRunsPage: React.FC = () => {
   const [selectedRun, setSelectedRun] = useState<ProductionRun | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isNewRunModalOpen, setIsNewRunModalOpen] = useState(false);
+  const [isAttachmentModalOpen, setIsAttachmentModalOpen] = useState(false);
+  const [attachmentRun, setAttachmentRun] = useState<ProductionRun | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
@@ -202,6 +205,17 @@ export const ProductionRunsPage: React.FC = () => {
             title="Inspect Run Breakdown"
           >
             <Eye className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => {
+              setAttachmentRun(row);
+              setIsAttachmentModalOpen(true);
+            }}
+            className="inline-flex items-center px-2 py-1 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-[11px] font-medium border border-indigo-200 transition-colors"
+            title="Upload/View Batch Quality Sheets & Lab Reports"
+          >
+            <Paperclip className="w-3.5 h-3.5 mr-1" />
+            QC Docs
           </button>
           {row.status === 'DRAFT' && (
             <button
@@ -510,6 +524,22 @@ export const ProductionRunsPage: React.FC = () => {
           </div>
         )}
       </Modal>
+
+      {/* Supabase Storage Production Batch Report Modal */}
+      {attachmentRun && (
+        <DocumentAttachmentModal
+          isOpen={isAttachmentModalOpen}
+          onClose={() => {
+            setIsAttachmentModalOpen(false);
+            setAttachmentRun(null);
+          }}
+          referenceId={attachmentRun.id}
+          referenceTitle={`Production Run ${attachmentRun.run_number}`}
+          documentType="production_report"
+          canUpload={true}
+          canDelete={true}
+        />
+      )}
     </div>
   );
 };

@@ -27,8 +27,12 @@ def create_app(config_class=Config):
         return jsonify({'error': 'Authorization token expired', 'message': 'Please login again'}), 401
 
     # Initialize database tables
+    # Initialize database tables and demo users
     with app.app_context():
-        init_db()
+     init_db()
+
+     from app.seed_users import seed_demo_users
+     seed_demo_users()
         
     # Register blueprints
     from app.routes.auth import auth_bp

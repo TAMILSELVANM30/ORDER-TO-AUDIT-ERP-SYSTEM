@@ -13,11 +13,11 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000',
-        changeOrigin: true,
-      },
-    },
+   proxy: {
+  '/api': {
+    target: 'https://order-to-audit-erp-system-1bcl.onrender.com',
+    changeOrigin: true,
+  },
+},
   },
 });

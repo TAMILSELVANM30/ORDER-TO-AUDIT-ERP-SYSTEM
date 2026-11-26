@@ -33,8 +33,9 @@ def seed_demo_users():
         print("Demo users seeded successfully.")
 
     except Exception as e:
-        db.rollback()
-        print(f"Demo user seeding failed: {e}")
+     db.rollback()
+     print(f"DEMO USER SEEDING ERROR: {repr(e)}")
+     raise
 
     finally:
         db.close()

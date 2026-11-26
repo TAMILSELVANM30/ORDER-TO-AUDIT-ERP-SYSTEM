@@ -4,36 +4,49 @@ from flask_jwt_extended import JWTManager
 from app.config import Config
 from app.db import init_db
 
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
-    
+
     # Enable CORS
-    CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
-    
+    CORS(
+        app,
+        resources={r"/api/*": {"origins": "*"}},
+        supports_credentials=True
+    )
+
     # JWT Manager
     jwt = JWTManager(app)
-    
+
     @jwt.unauthorized_loader
     def missing_token_callback(error):
-        return jsonify({'error': 'Authorization token required', 'message': error}), 401
+        return jsonify({
+            'error': 'Authorization token required',
+            'message': error
+        }), 401
 
     @jwt.invalid_token_loader
     def invalid_token_callback(error):
-        return jsonify({'error': 'Invalid authorization token', 'message': error}), 401
+        return jsonify({
+            'error': 'Invalid authorization token',
+            'message': error
+        }), 401
 
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):
-        return jsonify({'error': 'Authorization token expired', 'message': 'Please login again'}), 401
+        return jsonify({
+            'error': 'Authorization token expired',
+            'message': 'Please login again'
+        }), 401
 
-    # Initialize database tables
     # Initialize database tables and demo users
     with app.app_context():
-     init_db()
+        init_db()
 
-     from app.seed_users import seed_demo_users
-     seed_demo_users()
-        
+        from app.seed_users import seed_demo_users
+        seed_demo_users()
+
     # Register blueprints
     from app.routes.auth import auth_bp
     from app.routes.users import users_bp
@@ -53,7 +66,7 @@ def create_app(config_class=Config):
     from app.routes.dashboard import dashboard_bp
     from app.routes.settings import settings_bp
     from app.routes.storage import storage_bp
-    
+
     app.register_blueprint(auth_bp)
     app.register_blueprint(users_bp)
     app.register_blueprint(products_bp)
@@ -72,9 +85,47 @@ def create_app(config_class=Config):
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(storage_bp)
-    
+
+    # Health check
     @app.route('/api/health', methods=['GET'])
     def health_check():
-        return jsonify({'status': 'healthy', 'service': 'Order-to-Audit ERP API', 'version': '1.0.0'}), 200
-        
+        return jsonify({
+            'status': 'healthy',
+            'service': 'Order-to-Audit ERP API',
+            'version': '1.0.0'
+        }), 200
+
+    # Temporary database diagnostic endpoint
+    @app.route('/api/debug/database', methods=['GET'])
+    def debug_database():
+        from app.db import SessionLocal
+        from app.models.user import User
+
+        db = SessionLocal()
+
+        try:
+            users = db.query(User).all()
+
+            return jsonify({
+                'database_connected': True,
+                'users_count': len(users),
+                'demo_users_found': [
+                    user.email for user in users
+                    if user.email.endswith('@demo.com')
+                ],
+                'admin_exists': any(
+                    user.email == 'admin@demo.com'
+                    for user in users
+                )
+            }), 200
+
+        except Exception as e:
+            return jsonify({
+                'database_connected': False,
+                'error': str(e)
+            }), 500
+
+        finally:
+            db.close()
+
     return app

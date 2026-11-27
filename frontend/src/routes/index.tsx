@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import AppLayout from '../layouts/AppLayout'
 
 // Auth
+const AuthGatewayPage = lazy(() => import('../pages/auth/AuthGatewayPage'))
 const LoginPage = lazy(() => import('../pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('../pages/auth/RegisterPage'))
 
@@ -79,24 +80,27 @@ function RoleRedirect() {
   return <Navigate to={roleMap[user.role] ?? '/admin'} replace />
 }
 
+// Gateway entry: shows welcome portal if unauthenticated, or redirects to dashboard if authenticated
+function RootGatewayOrRedirect() {
+  const { isAuthenticated, isLoading } = useAuth()
+  if (isLoading) return <PageLoader />
+  if (isAuthenticated) {
+    return <RoleRedirect />
+  }
+  return <AuthGatewayPage />
+}
+
 export default function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        {/* Public */}
+        {/* Public & Gateway */}
+        <Route path="/" element={<RootGatewayOrRedirect />} />
+        <Route path="/gateway" element={<AuthGatewayPage />} />
+        <Route path="/auth" element={<AuthGatewayPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<RegisterPage />} />
         <Route path="/register" element={<RegisterPage />} />
-
-        {/* Protected root → redirect by role */}
-        <Route
-          path="/"
-          element={
-            <RequireAuth>
-              <RoleRedirect />
-            </RequireAuth>
-          }
-        />
 
         {/* Admin */}
         <Route

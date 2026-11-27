@@ -5,6 +5,7 @@ import AppLayout from '../layouts/AppLayout'
 
 // Auth
 const LoginPage = lazy(() => import('../pages/auth/LoginPage'))
+const RegisterPage = lazy(() => import('../pages/auth/RegisterPage'))
 
 // Admin
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'))
@@ -84,6 +85,8 @@ export default function AppRoutes() {
       <Routes>
         {/* Public */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<RegisterPage />} />
+        <Route path="/register" element={<RegisterPage />} />
 
         {/* Protected root → redirect by role */}
         <Route

@@ -26,12 +26,14 @@ import {
   Download,
   AlertCircle,
   UserCheck,
+  Database,
 } from 'lucide-react';
 
 export const AppLayout: React.FC = () => {
   const { user, role, logout, quickSwitchRole } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -166,6 +168,12 @@ export const AppLayout: React.FC = () => {
             )}
           </div>
 
+          {/* Supabase Status Indicator */}
+          <div className="hidden xl:flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-700 font-medium">
+            <Database className="w-3 h-3 text-emerald-600" />
+            <span>Supabase Connected</span>
+          </div>
+
           {/* User Profile */}
           <div className="flex items-center space-x-2 pl-2 border-l border-borderLine">
             <div className="hidden lg:block text-right">
@@ -173,11 +181,12 @@ export const AppLayout: React.FC = () => {
               <p className="text-[10px] text-secondaryText mt-0.5">{user?.email}</p>
             </div>
             <button
-              onClick={logout}
-              title="Logout"
-              className="p-1.5 rounded-lg text-secondaryText hover:text-danger hover:bg-rose-50 transition-colors"
+              onClick={() => setShowLogoutConfirm(true)}
+              title="Sign Out"
+              className="p-1.5 rounded-lg text-secondaryText hover:text-danger hover:bg-rose-50 transition-colors flex items-center space-x-1"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4 text-rose-500" />
+              <span className="hidden sm:inline text-xs text-rose-600 font-medium">Sign Out</span>
             </button>
           </div>
         </div>
@@ -241,6 +250,47 @@ export const AppLayout: React.FC = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl border border-borderLine animate-in zoom-in-95">
+            <div className="flex items-center space-x-3 text-amber-600 mb-3">
+              <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center border border-amber-200">
+                <LogOut className="w-5 h-5 text-amber-600" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-mainText">Confirm Sign Out</h3>
+                <p className="text-xs text-secondaryText">End your current session</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-secondary leading-relaxed mb-5">
+              Are you sure you want to sign out from <strong>Dakshin Packaged Foods ERP</strong>? You will need to sign in again to access the dashboard.
+            </p>
+
+            <div className="flex items-center justify-end space-x-2 pt-3 border-t border-borderLine">
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                className="px-3.5 py-1.5 rounded-lg border border-borderLine text-xs font-semibold text-mainText hover:bg-slate-50 transition-colors"
+              >
+                Stay Signed In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  logout();
+                }}
+                className="px-4 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs transition-colors"
+              >
+                Yes, Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -49,6 +49,7 @@ def create_app(config_class=Config):
     from app.routes.dashboard import dashboard_bp
     from app.routes.settings import settings_bp
     from app.routes.storage import storage_bp
+    from app.routes.supabase_client import supabase_bp
     
     app.register_blueprint(auth_bp)
     app.register_blueprint(users_bp)
@@ -68,6 +69,7 @@ def create_app(config_class=Config):
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(storage_bp)
+    app.register_blueprint(supabase_bp)
     
     @app.route('/api/health', methods=['GET'])
     def health_check():

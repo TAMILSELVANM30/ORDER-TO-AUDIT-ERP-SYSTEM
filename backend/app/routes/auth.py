@@ -6,6 +6,80 @@ from app.utils.audit import log_audit_event
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/api/auth')
 
+@auth_bp.route('/register', methods=['POST'])
+@auth_bp.route('/signup', methods=['POST'])
+def register():
+    data = request.get_json() or {}
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    full_name = data.get('full_name', '').strip()
+    role = data.get('role', 'SALESMAN').upper().strip()
+    
+    if not email or not password or not full_name:
+        return jsonify({'error': 'Full name, email, and password are required'}), 400
+        
+    if len(password) < 6:
+        return jsonify({'error': 'Password must be at least 6 characters long'}), 400
+        
+    from app.models.user import Role
+    if role not in Role.ALL:
+        role = Role.SALESMAN
+        
+    db = SessionLocal()
+    try:
+        existing_user = db.query(User).filter_by(email=email).first()
+        if existing_user:
+            return jsonify({'error': 'An account with this email already exists'}), 409
+            
+        new_user = User(
+            email=email,
+            full_name=full_name,
+            role=role,
+            is_active=True
+        )
+        new_user.set_password(password)
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+        
+        # Dual-sync to Supabase Auth if client is configured
+        try:
+            from app.routes.supabase_client import get_supabase_instance
+            sb = get_supabase_instance()
+            if sb:
+                sb.auth.sign_up({
+                    "email": email,
+                    "password": password,
+                    "options": {
+                        "data": {
+                            "full_name": full_name,
+                            "role": role
+                        }
+                    }
+                })
+        except Exception:
+            pass
+            
+        log_audit_event(
+            db, action="USER_REGISTER", entity_type="User",
+            entity_id=new_user.id, user_id=new_user.id,
+            remarks=f"User {new_user.email} registered with role {new_user.role}"
+        )
+        db.commit()
+        
+        token = create_access_token(
+            identity=new_user.id,
+            additional_claims={'role': new_user.role, 'full_name': new_user.full_name}
+        )
+        
+        return jsonify({
+            'message': 'Account created successfully',
+            'access_token': token,
+            'user': new_user.to_dict()
+        }), 201
+    finally:
+        db.close()
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json() or {}
